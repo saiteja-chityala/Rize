@@ -1,0 +1,114 @@
+- name: Create the EC2 instance
+  hosts: localhost
+  gather_facts: true
+  connection: localhost
+  vars:
+    name: RubyServer
+    ami: ami-0323c3dd2da7fb37d
+    keypair: rubykey
+    security_group: RubySecurityGroup
+    instance_type: t2.micro
+    region: us-east-1
+    subnet: subnet-09554527
+    ec2user: ec2-user
+    aws_tags:
+      Name: RubyServer
+      Application: WebApplication
+      Environment: Development
+
+  tasks:
+    - name: Query if EC2 Exists Already
+      command: aws ec2 describe-instances --region {{ region }} --filter Name=tag:Name,Values={{ name }} --query "Reservations[].Instances[].PublicIpAddress" --output text
+      register: query_public_ip
+
+    - name: Creating the Instance
+      ec2:
+        key_name: "{{ keypair }}"
+        group: "{{ security_group }}"
+        instance_type: "{{ instance_type }}"
+        image: "{{ ami }}"
+        user_data: "{{ lookup('file', 'user_data.sh') }}"
+        wait: true
+        region: "{{ region }}"
+        vpc_subnet_id: "{{ subnet }}"
+        assign_public_ip: true
+        instance_tags: "{{ aws_tags }}"
+        count: 1
+        count_tag:
+          Name: RubyServer
+      when: query_public_ip.stdout == ''
+      register: ec2
+
+    - debug: "msg=\"Public IP : {{ query_public_ip.stdout }}\""
+
+    - name: Get ip address of existing or created instance
+      command: aws ec2 describe-instances --region {{ region }} --filter Name=tag:Name,Values={{ name }} --query "Reservations[].Instances[].PublicIpAddress" --output text
+      register: query_public_ip
+
+    - name: Set fact for ip address
+      set_fact:
+        ec2_instance_public_address: "{{ query_public_ip.stdout }}"
+
+    - name: Add instance to group for later plays
+      add_host:
+        name: "{{ ec2_instance_public_address }}"
+        ansible_ssh_port: 22
+        ansible_ssh_private_key_file: "./{{ keypair }}.pem"
+        ansible_user: "{{ ec2user }}"
+        groups: rubyservers
+
+    - name: Wait for ssh to respond
+      wait_for:
+        host: "{{ ec2_instance_public_address }}"
+        port: 22
+        state: started
+
+    - name: Add instance to local inventory file
+      local_action: lineinfile dest=./hosts regexp="{{ query_public_ip.stdout }}" line="{{ query_public_ip.stdout }} ansible_ssh_private_key_file=./{{ keypair }}.pem ansible_user={{ ec2user }}"
+
+    - name: Adding Istance SSH fingerprints to known hosts
+      shell: ssh-keyscan -H {{ ec2_instance_public_address }} >> ~/.ssh/known_hosts
+
+    - name: Change file ownership, group and permissions
+      file:
+        path: "{{ keypair }}.pem"
+        mode: '0400'
+          
+    - name: Compress Docker files
+      shell: |
+        zip -r docker.zip ../puma ../webrick
+    
+    - name: Copy Docker zip
+      copy:
+        src: docker.zip
+        dest: ~/docker.zip
+
+- name: Install newly created machines
+  hosts: rubyservers
+  any_errors_fatal: true
+  become: yes
+  vars:
+    name: RubyServer
+    homedir: /home/ec2-user
+  tasks:    
+    - name: Set hostname
+      hostname: name={{ name }}
+      
+    - name: Copy Docker zip
+      copy:
+        src: docker.zip
+        dest: "{{ homedir }}/docker.zip"
+
+    - name: Unarchive docker zip
+      unarchive:
+        src: docker.zip
+        dest: .
+        remote_src: yes
+      ignore_errors: yes
+    - name: Run docker containers
+      shell: |
+        cd puma
+        . ./docker.sh
+        cd ../webrick
+        . ./docker.sh
+
