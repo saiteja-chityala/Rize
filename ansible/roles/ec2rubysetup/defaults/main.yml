@@ -4,7 +4,7 @@ VPC_REGION: us-east-1 # N.Virginia
 SERVER_NAME: "RubyWebServer"
 KEY_PAIR: "rubykey"
 HOME_DIR: "/home/ec2-user"
-ANSIBLE_DIR: "/var/lib/jenkins"
+ARTIFACT_DIR: "/var/lib/jenkins/artifacts"
 
 
 # Use inside the tasks
@@ -12,3 +12,4 @@ vpc_region: "{{ VPC_REGION }}"
 server_name: "{{ SERVER_NAME }}"
 keypair: "{{ KEY_PAIR }}"
 homedir: "{{ HOME_DIR }}"
+artifact_dir: "{{ ARTIFACT_DIR }}"

@@ -10,6 +10,7 @@ EC2_SUBNET_ID: subnet-09554527
 EC2_USER: "ec2-user"
 # Example of EC2_SUBNET_ID
 # EC2_SUBNET_ID:
+ARTIFACT_DIR: "/var/lib/jenkins/artifacts"
 #   - "subnet-0c3e0b7b"
 #   - "subnet-bf672ae6"
 AMI_NAME: "ami-0323c3dd2da7fb37d"
@@ -24,6 +25,7 @@ ec2_count: "{{ EC2_COUNT }}"
 ec2_subnet_id: "{{ EC2_SUBNET_ID }}"
 ec2_user: "{{ EC2_USER }}"
 ami_name: "{{ AMI_NAME }}"
+artifact_dir: "{{ ARTIFACT_DIR }}"
 
 # Tags
 ENVIRONMENT: Dev
