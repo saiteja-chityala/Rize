@@ -4,7 +4,7 @@
   
 - name: Copy Docker zip
   copy:
-    src:" {{ artifact_dir }}/docker.zip"
+    src: "{{ artifact_dir }}/docker.zip"
     dest: "{{ homedir }}/docker.zip"
 
 - name: Unarchive docker zip
