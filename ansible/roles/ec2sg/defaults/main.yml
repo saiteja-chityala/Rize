@@ -1,0 +1,25 @@
+---
+# Variables that can provide as extra vars
+VPC_REGION: us-east-1 # N.Virginia
+ENVIRONMENT: "Dev"
+EC2_SECURITY_GROUPS:
+  - name: ec2-ruby-web-sg
+    description: "This SG is to expose RubyWebserver ports"
+    rules:
+      - proto: tcp
+        from_port: 1212
+        to_port: 1212
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 206
+        to_port: 206
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+
+# Use inside the tasks
+vpc_region: "{{ VPC_REGION }}"
+Environment: "{{ ENVIRONMENT }}"
+ec2_security_groups: "{{ EC2_SECURITY_GROUPS }}"

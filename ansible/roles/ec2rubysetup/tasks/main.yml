@@ -1,0 +1,22 @@
+---
+- name: Set hostname
+  hostname: name={{ server_name }}
+  
+- name: Copy Docker zip
+  copy:
+    src: docker.zip
+    dest: "{{ homedir }}/docker.zip"
+
+- name: Unarchive docker zip
+  unarchive:
+    src: docker.zip
+    dest: .
+    remote_src: yes
+  ignore_errors: yes
+
+- name: Run docker containers
+  shell: |
+    cd puma
+    . ./docker.sh
+    cd ../webrick
+    . ./docker.sh

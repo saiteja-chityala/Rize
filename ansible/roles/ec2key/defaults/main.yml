@@ -1,0 +1,10 @@
+---
+# Variables that can provide as extra vars
+VPC_REGION: us-east-1 # N.Virginia
+EC2_KEY_NAME: "rubykey"
+JENKINS_HOME: "/var/lib"
+
+# Use inside the tasks
+vpc_region: "{{ VPC_REGION }}"
+ec2_key_name: "{{ EC2_KEY_NAME }}"
+jenkins_home: "{{ JENKINS_HOME }}"

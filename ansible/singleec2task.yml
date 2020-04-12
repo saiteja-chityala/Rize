@@ -39,12 +39,12 @@
       when: query_public_ip.stdout == ''
       register: ec2
 
-    - debug: "msg=\"Public IP : {{ query_public_ip.stdout }}\""
-
     - name: Get ip address of existing or created instance
       command: aws ec2 describe-instances --region {{ region }} --filter Name=tag:Name,Values={{ name }} --query "Reservations[].Instances[].PublicIpAddress" --output text
       register: query_public_ip
 
+    - debug: "msg=\"Public IP : {{ query_public_ip.stdout }}\""
+    
     - name: Set fact for ip address
       set_fact:
         ec2_instance_public_address: "{{ query_public_ip.stdout }}"
