@@ -71,6 +71,4 @@
   shell: |
     cd ..
     zip -r docker.zip puma webrick
-
-- name: Copy zip to artifacts directory
-  shell: cp -r docker.zip {{ artifact_dir }}/
+    cp -r docker.zip {{ artifact_dir }}
