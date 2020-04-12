@@ -71,4 +71,4 @@
   shell: |
     cd ..
     zip -r docker.zip puma webrick
-    "cp docker.zip {{ artifact_dir }}/docker.zip"
+    "cp docker.zip {{ artifact_dir }}/"
